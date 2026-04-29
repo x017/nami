@@ -5,13 +5,15 @@ description = "Nami Music Player"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-"python-vlc",
-"tinydb",
-"textual",
-"cbor2",
-"python-daemon",
-"watchfiles",
-"mutagen",
+    "python-vlc",
+    "tinydb",
+    "textual",
+    "cbor2",
+    "python-daemon",
+    "watchfiles",
+    "mutagen",
+    "ruff>=0.15.12",
+    "textual-image>=0.12.0",
 ]
 
 
