@@ -1,21 +1,42 @@
 import socket
-import cbor2 as cbor
+import json
 from player import Player
 
-
 player = Player()
-player.load('test.mp3')
+player.load("test.mp3")
+
+COMMANDS = {
+    "play": lambda _: player.play(),
+    "pause": lambda _: player.pause(),
+    "stop": lambda _: player.stop(),
+    "toggle": lambda _: player.toggle(),
+    "info": lambda _: player.get_info(),
+    "position": lambda _: player.get_position(),
+    "state": lambda _: player.get_state(),
+    "forward": lambda p: player.forward(p.get("seconds", 5)),
+    "backward": lambda p: player.backward(p.get("seconds", 5)),
+    "seek_to": lambda p: player.seek_to(p.get("position", 0)),
+    "volume": lambda p: player.set_volume(p.get("volume", 100)),
+    "get_volume": lambda _: player.get_volume(),
+    "load": lambda p: player.load(p["path"]) or {"status": "loaded"},
+    "next": lambda _: player.next(),
+    "previous": lambda _: player.previous(),
+    "add_to_playlist": lambda p: player.add_to_playlist(p["path"]),
+    "remove_from_playlist": lambda p: player.remove_from_playlist(p["index"]),
+    "get_playlist": lambda _: player.get_playlist(),
+    "clear_playlist": lambda _: player.clear_playlist(),
+    "play_index": lambda p: player.play_index(p["index"]),
+    "shuffle": lambda _: player.toggle_shuffle(),
+    "repeat": lambda _: player.toggle_repeat(),
+}
+
 
 class Mint:
-    """
-    Mint Server Class
-    """
     def __init__(self, host="127.0.0.1", port=20150) -> None:
         self.host = host
         self.port = port
         self.socket = None
         self.running = False
-        print(f"Server initialzied on {host}:{port}")
 
     def start(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -23,31 +44,52 @@ class Mint:
         self.socket.bind((self.host, self.port))
         self.socket.listen(5)
         self.running = True
+        print(f"Server listening on {self.host}:{self.port}")
 
     def process_requests(self):
         while self.running:
             conn, addr = self.socket.accept()
             with conn:
-                while True:
-                    data = conn.recv(1024).decode('utf-8')
-                    if not data:
-                        break
-                    if "disconnect" in data:
-                        self.close_connection(conn)
-                        break
-                    if "play" in data:
-                        player.play()
-                    if "pause" in data:
-                        player.pause()
-                    if "info" in data:
-                        info = player.get_info()
-                        print(info)
+                print(f"Client connected: {addr}")
+                self._handle_connection(conn)
 
-    def close_connection(self,connection):
-        connection.close()
+    def _handle_connection(self, conn: socket.socket):
+        buf = b""
+        while True:
+            chunk = conn.recv(4096)
+            if not chunk:
+                break
+            buf += chunk
+            while b"\n" in buf:
+                line, buf = buf.split(b"\n", 1)
+                response = self._dispatch(line)
+                conn.sendall(json.dumps(response).encode() + b"\n")
+
+    def _dispatch(self, raw: bytes) -> dict:
+        try:
+            req = json.loads(raw)
+        except json.JSONDecodeError:
+            return {"error": "invalid json"}
+
+        command = req.get("request")
+        params = req.get("params", {})
+
+        handler = COMMANDS.get(command)
+        if handler is None:
+            return {"error": f"unknown command: {command}"}
+
+        try:
+            return handler(params)
+        except Exception as e:
+            return {"error": str(e)}
+
+    def stop(self):
+        self.running = False
+        if self.socket:
+            self.socket.close()
 
 
-
-server = Mint()
-server.start()
-server.process_requests()
+if __name__ == "__main__":
+    server = Mint()
+    server.start()
+    server.process_requests()
