@@ -19,6 +19,8 @@ class Player:
     # ── Playback control ──────────────────────────────────────────────
 
     def load(self, path: str):
+        if self.player:
+            self.player.stop()
         self.current_music = path
         self.player = vlc.MediaPlayer(self.current_music)
         events = self.player.event_manager()
