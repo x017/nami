@@ -1,7 +1,25 @@
-import threading
+import ctypes, os, sys, threading
 from mutagen.easyid3 import EasyID3
-import vlc
 from mutagen import mp3
+
+# ── PyInstaller bootstrap: pre-load bundled VLC shared libraries ──
+if getattr(sys, "frozen", False):
+    _base = sys._MEIPASS
+    for _lib in ("libvlccore.so", "libvlc.so"):
+        _p = os.path.join(_base, _lib)
+        if os.path.exists(_p):
+            try:
+                ctypes.CDLL(_p)
+            except OSError:
+                pass
+    for _d in ("vlc_plugins", "plugins"):
+        _p = os.path.join(_base, _d)
+        if os.path.isdir(_p):
+            os.environ["VLC_PLUGIN_PATH"] = _p
+            break
+# ─────────────────────────────────────────────────────────────────
+
+import vlc
 
 
 class Player:
@@ -15,6 +33,8 @@ class Player:
         self._volume: int = 100
         self._shuffle: bool = False
         self._repeat: bool = False
+        # headless VLC instance — no X11/video window needed in a daemon
+        self._vlc = vlc.Instance("--vout", "dummy", "--no-xlib", "--no-plugins-cache")
 
     # ── Playback control ──────────────────────────────────────────────
 
@@ -22,7 +42,7 @@ class Player:
         if self.player:
             self.player.stop()
         self.current_music = path
-        self.player = vlc.MediaPlayer(self.current_music)
+        self.player = self._vlc.media_player_new(path)
         events = self.player.event_manager()
         events.event_attach(vlc.EventType.MediaPlayerEndReached, self._on_playback_end)
         self.status = "stopped"

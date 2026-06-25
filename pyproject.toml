@@ -7,13 +7,21 @@ requires-python = ">=3.12"
 dependencies = [
     "python-vlc",
     "tinydb",
-    "textual",
     "cbor2",
     "python-daemon",
     "watchfiles",
     "mutagen",
     "ruff>=0.15.12",
     "textual-image>=0.12.0",
+    "pytermgui>=7.7.4",
+    "pyyaml>=6.0.3",
+    "tqdm>=4.67.3",
+    "py-cui",
+    "chafa.py",
+    "textual>=8.2.5",
+    "urwid>=4.0.0",
+    "pyinstaller>=6.21.0",
+    "nuitka>=4.1.3",
 ]
 
 

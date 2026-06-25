@@ -5,6 +5,19 @@ build/
 dist/
 wheels/
 *.egg-info
-
+.idea/
+.ruff_cache/
+test.py
 # Virtual environments
 .venv
+# PyInstaller spec
+*.spec
+# Test/media files
+*.mp3
+*.jpg
+*.png
+*.flac
+*.ogg
+# Personal notes
+TODO.md
+*todos.md

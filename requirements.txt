@@ -1,0 +1,6 @@
+mutagen
+urwid>=3.0
+tqdm
+Pillow
+tinydb
+python-vlc

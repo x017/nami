@@ -1,0 +1,13 @@
+[Unit]
+Description=Nami music server
+After=network.target sound.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/nami
+Restart=on-failure
+RestartSec=5
+Nice=-10
+
+[Install]
+WantedBy=default.target
