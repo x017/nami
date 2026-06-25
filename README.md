@@ -19,6 +19,7 @@ Requires Python 3.12+, [VLC](https://www.videolan.org/vlc/), and `pkg-config`. I
 - Python 3.12+
 - [VLC](https://www.videolan.org/vlc/) (`libvlc` + `libvlccore`)
 - `pkg-config`, `python3-pip`
+- GLib/GIO (`libgirepository1.0-dev` on Debian, `gobject-introspection-devel` on Fedora) — only needed for MPRIS support
 
 ### From source
 
@@ -110,6 +111,18 @@ The daemon listens on TCP port `20224` (configurable in `~/.config/nami/config.j
 | `remove_from_playlist` | `{"index": int}` | `{"playlist_length": int}` |
 | `clear_playlist` | `{}` | `{"playlist_length": 0}` |
 | `play_index` | `{"index": int}` | `{"current_index": int}` |
+
+## MPRIS
+
+The daemon exposes a [MPRIS 2.1](https://specifications.freedesktop.org/mpris-spec/latest/) D-Bus interface for desktop integration (media keys, lock screen controls, etc.):
+
+| Item | Value |
+|---|---|
+| Bus name | `org.mpris.MediaPlayer2.nami` |
+| Object path | `/org/mpris/MediaPlayer2` |
+| Interfaces | `org.mpris.MediaPlayer2`, `org.mpris.MediaPlayer2.Player` |
+
+Requires `dasbus` and `PyGObject` (installed by default via `requirements.txt`). The service starts automatically with the daemon; no extra config needed.
 
 ### Example
 

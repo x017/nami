@@ -20,6 +20,7 @@ else:
     }
     CONFIG_PATH.write_text(json.dumps(config, indent=2))
 
+
 def main():
     port = config["port"]
     music_path = config["music_path"]
@@ -28,7 +29,19 @@ def main():
     db.init_db()
     all_music = db.read_db_all()
     print(f"Database has {len(all_music)} entries")
+
     server = Mint(port=port, database=db)
+
+    # Start MPRIS D-Bus service in background thread
+    try:
+        from backend.mpris import MprisRunner
+
+        mpris = MprisRunner(server.player)
+        mpris.start()
+        print("MPRIS D-Bus service started")
+    except Exception as e:
+        print(f"MPRIS service unavailable: {e}")
+
     server.start()
     server.process_requests()
 

@@ -15,6 +15,8 @@ setup(
         "Pillow",
         "tinydb",
         "python-vlc",
+        "dasbus",
+        "PyGObject",
     ],
     extras_require={
         "build": ["pyinstaller"],
